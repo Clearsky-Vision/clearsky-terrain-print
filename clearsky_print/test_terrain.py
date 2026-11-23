@@ -14,6 +14,7 @@ from xml.etree import ElementTree
 from zipfile import ZipFile
 
 import numpy as np
+import rasterio
 
 from clearsky_api import PROCESS, prepare_downloads
 from demo import generate
@@ -69,6 +70,13 @@ class TemporalTests(unittest.TestCase):
         self.assertEqual(result[0][1]["Bandnames"], "B4,B3,B2")
         self.assertFalse(result[0][1]["AutomaticOrderCreation"])
 
+    def test_missing_processing_units_prevents_download_plan(self):
+        client = SimpleNamespace(json=lambda path, _: {} if path.endswith("/estimate") else dict.fromkeys(
+            ("FullyAvailable", "OrdersCoverPolygon", "DataAvailableForUser"), True,
+        ))
+        with self.assertRaisesRegex(ValueError, "valid processing-unit estimate"):
+            list(prepare_downloads(client, Area(10.55, 56.23, 3, 1, 1), "Stratus2", ["Sentinel2"], [date(2025, 6, 2)]))
+
 
 def read_model(path):
     with ZipFile(path) as archive:
@@ -87,6 +95,10 @@ class ExportTests(unittest.TestCase):
             root = Path(directory)
             data, prints = root / "data", root / "prints"
             generate(data)
+            with rasterio.open(data / "dem.tif", "r+") as dem:
+                dem.update_tags(ATTRIBUTION="Required elevation credit", DISTRIBUTION_NOTICE="Distribution notice")
+            with rasterio.open(next(path for path in sorted(data.glob("*.tif")) if path.name != "dem.tif"), "r+") as image:
+                image.update_tags(ATTRIBUTION="Required imagery credit")
             palettes = {
                 "r01c01": "#3C597C,#658450,#A7875E,#BBC19A",
                 "r01c02": "#315780,#698956,#967C54,#CDDAB0",
@@ -94,13 +106,16 @@ class ExportTests(unittest.TestCase):
             command = [
                 sys.executable, str(Path(__file__).with_name("terrain.py")), "build",
                 "--series", str(data / "series.json"), "--dem", str(data / "dem.tif"),
-                "--out", str(prints), "--samples", "65", "--min-dates", "2",
+                "--out", str(prints), "--samples", "65", "--min-dates", "2", "--dem-attribution", "Extra credit",
             ]
             for name, colors in palettes.items():
                 command.extend(("--tile-palette", name, colors))
             subprocess.run(command, check=True, capture_output=True)
             manifest = json.loads((prints / "print-manifest.json").read_text("utf-8"))
             self.assertEqual(manifest["tile_edges"], "puzzle")
+            self.assertEqual(manifest["dem_attribution"], "Required elevation credit\nExtra credit")
+            self.assertIn("Required imagery credit", manifest["imagery_attribution"])
+            self.assertIn("Distribution notice", (prints / "PRINT.txt").read_text("utf-8"))
             heights, limits = [], []
             for name, colors in palettes.items():
                 folder = prints / name / "median"

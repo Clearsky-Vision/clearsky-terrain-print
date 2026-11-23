@@ -170,8 +170,9 @@ def read_rgb(path, grid, encoding, bands=None, dn_offset=0):
 def source_metadata(path):
     with rasterio.open(path) as source:
         return {key: value for key, value in source.tags().items()
-                if key.upper() in {"IMAGE_DATE", "MODEL_VERSION", "IMAGE_VERSION", "CONSTELLATIONS", "SOURCE"}
-                or any(term in key.lower() for term in ("attrib", "license", "provenance"))}
+                if key.upper() in {"IMAGE_DATE", "MODEL_VERSION", "IMAGE_VERSION", "CONSTELLATIONS", "SOURCE",
+                                   "DISTRIBUTION_NOTICE"}
+                or any(term in key.lower() for term in ("attrib", "license", "licence", "provenance"))}
 
 
 def dated_images(paths):

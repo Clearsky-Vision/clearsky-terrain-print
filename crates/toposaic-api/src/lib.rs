@@ -1,3 +1,4 @@
+// Modified from TopoSaic for ClearSKY Terrain Print.
 use std::{
     collections::HashMap,
     path::PathBuf,
@@ -102,6 +103,12 @@ pub async fn run_with(data_dir: PathBuf, address: String) -> Result<()> {
     let connection = Connection::open(data_dir.join("toposaic.sqlite3"))?;
     migrate(&connection)?;
     let geocoder = http::async_client(Duration::from_secs(12))?;
+    let listener = TcpListener::bind(&address).await?;
+    let clearsky = if listener.local_addr()?.ip().is_loopback() {
+        clearsky::Bridge::from_env(&data_dir)
+    } else {
+        None
+    };
 
     let state = AppState {
         db: Arc::new(StdMutex::new(connection)),
@@ -112,7 +119,7 @@ pub async fn run_with(data_dir: PathBuf, address: String) -> Result<()> {
         last_geocode_request: Arc::new(AsyncMutex::new(Instant::now() - Duration::from_secs(1))),
         active_jobs: Arc::new(StdMutex::new(HashMap::new())),
         active_preview: Arc::new(StdMutex::new(None)),
-        clearsky: clearsky::Bridge::from_env(&data_dir),
+        clearsky,
         studio_dir: std::env::var_os("TOPOSAIC_STUDIO_DIR").map(PathBuf::from),
     };
 
@@ -176,7 +183,6 @@ pub async fn run_with(data_dir: PathBuf, address: String) -> Result<()> {
         .layer(TraceLayer::new_for_http())
         .with_state(state);
 
-    let listener = TcpListener::bind(&address).await?;
     info!(
         %address,
         data_dir = %data_dir.display(),

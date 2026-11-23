@@ -131,11 +131,10 @@ def build(request, output):
         if not picked or not picked.issubset(images):
             raise ValueError("Choose one or more dates from the loaded imagery.")
         write_json(series, {**source, "area": asdict(area),
-                            "attribution": request.get("imageryAttribution") or source.get("attribution"),
                             "images": {day: str(images[day].resolve()) for day in sorted(picked)}})
         args = Namespace(
             series=series, center=None, span_km=None, aoi=None, tiles=None,
-            image=None, provider=source["provider"], attribution=None, dem=dem,
+            image=None, provider=source["provider"], attribution=request.get("imageryAttribution"), dem=dem,
             dem_attribution=request.get("demAttribution"), engine=Path(os.environ["TOPOSAIC_CLEARSKY_ENGINE"]),
             out=folder / "prints", name=request.get("name") or "Satellite terrain",
             encoding="auto", rgb_bands=None, dn_offset=0, composite=request["composite"],

@@ -17,6 +17,7 @@ with heights in metres. Pick a shared filament palette or colors per tile.
 
 Keep the launcher window open while working. The studio runs on this
 computer. The standard TopoSaic studio remains available from the top bar.
+This preview ships with unsigned Windows executables.
 
 Open the downloaded 3MF files in Flash Studio Desktop with the correct
 Creator 5 Pro profile and map the colors to your loaded filaments. The ZIP

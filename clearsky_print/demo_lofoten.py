@@ -24,7 +24,14 @@ DEM = f"https://copernicus-dem-30m.s3.eu-central-1.amazonaws.com/{DEM_TILE}/{DEM
 IMAGE_CREDIT = "Contains modified Copernicus Sentinel data 2025. COG distribution by Element 84 Earth Search."
 DEM_CREDIT = (
     "Produced using Copernicus WorldDEM-30 © DLR e.V. 2010-2014 and © Airbus Defence and Space GmbH "
-    "2014-2018 provided under COPERNICUS by the European Union and ESA; all rights reserved"
+    "2014-2018 provided under COPERNICUS by the European Union and ESA; all rights reserved."
+)
+DEM_DISTRIBUTION_NOTICE = (
+    "The organisations in charge of the Copernicus programme by law or by delegation "
+    "do not incur any liability for any use of the Copernicus WorldDEM-30."
+)
+DEM_LICENSE_URL = (
+    "https://documentation.dataspace.copernicus.eu/APIs/SentinelHub/Data/DEM/resources/license/License-COPDEM-30.pdf"
 )
 
 
@@ -41,7 +48,8 @@ def generate(folder):
     with rasterio.open(folder / "dem.tif", "w", driver="GTiff", count=1, compress="deflate", **grid) as out:
         out.write(heights, 1)
         out.set_band_unit(1, "m")
-        out.update_tags(SOURCE=DEM, ATTRIBUTION=DEM_CREDIT)
+        out.update_tags(SOURCE=DEM, ATTRIBUTION=DEM_CREDIT, DISTRIBUTION_NOTICE=DEM_DISTRIBUTION_NOTICE,
+                        LICENSE_URL=DEM_LICENSE_URL)
 
     photos = {**grid, "dtype": "uint8", "nodata": None}
     for day, scene in SCENES.items():

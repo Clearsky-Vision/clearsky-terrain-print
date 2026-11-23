@@ -2,6 +2,7 @@
 
 from datetime import date
 import json
+from math import isfinite
 import os
 from pathlib import Path
 import shutil
@@ -141,4 +142,7 @@ def prepare_downloads(client, area, model, constellations, dates):
             raise ValueError(f"{day} does not cover the print area: {eligibility}. Choose another date or reduce the area.")
         if estimate is None:
             estimate = client.json(PROCESS + "/estimate", {"Wkt": wkt})
+            units = estimate.get("ProcessingUnitEstimate") if isinstance(estimate, dict) else None
+            if type(units) not in (int, float) or not isfinite(units) or units < 0:
+                raise ValueError("ClearSKY did not return a valid processing-unit estimate. No images were downloaded.")
         yield day, payload, estimate

@@ -1,10 +1,12 @@
 # ClearSKY Terrain Print
 
+<!-- Modified from the TopoSaic README for ClearSKY Terrain Print. -->
+
 Pick an area on the map and turn it into a 3D-printable terrain puzzle. A DEM gives the tiles their shape. A ClearSKY time series gives them their colors. You can use four colors per tile and change the spool set between tiles on the Flashforge Creator 5 Pro.
 
 ## Try Mount Fuji
 
-1. Download `toposaic-clearsky-studio-windows.zip` from this repo's **Releases** and extract it. Install 64-bit Python 3.13 with Tcl/Tk and the `py` launcher if you need it.
+1. Download `toposaic-clearsky-studio-windows.zip` from [Releases](https://github.com/Clearsky-Vision/clearsky-terrain-print/releases) and extract it. Install 64-bit Python 3.13 with Tcl/Tk and the `py` launcher if you need it.
 2. Run **Start TopoSaic Studio.cmd**. The first run downloads the imagery libraries. Keep the launcher window open while you work.
 3. In the browser, choose **ClearSKY studio**, **Load Fuji example**, and **Build print files**. The example includes three Sentinel-2 dates and a Copernicus DEM and works without a ClearSKY account.
 4. Preview the four puzzle tiles and click **Download print kit**. Open the 3MFs in Flash Studio, choose the Creator 5 Pro profile, and map the colors to your loaded spools.
@@ -22,4 +24,4 @@ We’ve generated and sliced the Fuji tiles. We still need to check the joint fi
 
 ## Credits
 
-Built on TopoSaic by Yann Ramin and contributors. See the [upstream docs](https://github.com/theatrus/toposaic/blob/fb365e0d12cfd99483d0d0cfe37077295d555b68/README.md), [Apache 2.0 license](LICENSE), [NOTICE](NOTICE), and [third-party credits](THIRD_PARTY_NOTICES.md). Keep the imagery and elevation credits from the print manifest with anything you share.
+Built on TopoSaic by Yann Ramin and contributors. See the [upstream docs](https://github.com/theatrus/toposaic/blob/fb365e0d12cfd99483d0d0cfe37077295d555b68/README.md), [Apache 2.0 license](LICENSE), [NOTICE](NOTICE), and [data and dependency credits](THIRD_PARTY_NOTICES.md). Keep the imagery and elevation credits from the print manifest with anything you share.

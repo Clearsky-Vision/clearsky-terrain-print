@@ -1,5 +1,7 @@
 # Third-party licenses and data
 
+This file was updated from TopoSaic for ClearSKY Terrain Print.
+
 The Apache-2.0 license in `LICENSE` covers the TopoSaic source code and
 documentation. It does not relicense third-party software, the bundled font, or
 map data.
@@ -29,6 +31,12 @@ GPL-only or AGPL package.
 Anyone who distributes a compiled application or a web build must include the
 notices and license texts required by the exact dependency versions in that
 distribution. `Cargo.lock` and `package-lock.json` record those versions.
+
+The Windows preview includes the license notices for its Rust and frontend
+dependencies in `dependency-licenses`. The Rust dependency set includes
+`option-ext` 0.2.0. Its unmodified MPL-2.0 source archive is in
+`dependency-licenses/option-ext-0.2.0` in the Windows ZIP. It is also available
+from [the crate registry](https://crates.io/api/v1/crates/option-ext/0.2.0/download).
 
 ### three.js
 
@@ -87,3 +95,15 @@ project.
 When a physical print or static image is shared publicly, place the required
 credits near the work or in its packaging or accompanying documentation. Do
 not rely on the software license as a substitute for data attribution.
+
+## ClearSKY examples and order data
+
+The Windows preview bundles cropped, masked Sentinel-2 imagery and a
+resampled Copernicus GLO-30 Public elevation tile for Mount Fuji. See the
+[Fuji data credits](examples/mount-fuji/DATA-CREDITS.txt) for
+the source scene IDs, elevation tile, and the notices that travel with the data.
+
+For prints from a ClearSKY order, keep the notices supplied with that order
+and its imagery. Add any notices supplied separately using **Source credit**
+and check `PRINT.txt` before sharing the print or its files. See the
+[ClearSKY Data Service Terms](https://clearsky.vision/legal/data-service-terms).

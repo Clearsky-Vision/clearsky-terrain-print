@@ -1,3 +1,4 @@
+// Modified from TopoSaic for ClearSKY Terrain Print.
 import type {
   CacheClearResult,
   CacheStats,

@@ -127,7 +127,7 @@ def inputs(args):
         series = json.loads(args.series.read_text("utf-8"))
         area = Area(**series["area"])
         files = {date.fromisoformat(day): folder / path for day, path in series["images"].items()}
-        attribution = args.attribution or series.get("attribution")
+        attribution = combine_credits(series.get("attribution"), args.attribution)
         return area, files, series["provider"], series["model"], series["constellations"], attribution
     files = {date.fromisoformat(day): Path(path) for day, path in args.image}
     if len(files) != len(args.image):
@@ -240,6 +240,11 @@ def filament_preview(export):
     Image.fromarray(rgb[indices[::-1]]).save(export / "filament-preview.png")
 
 
+def combine_credits(*values):
+    lines = (line.strip() for value in values if value for line in value.splitlines())
+    return "\n".join(dict.fromkeys(line for line in lines if line)) or None
+
+
 def build(args):
     area, files, provider, model, constellations, attribution = inputs(args)
     if not args.engine.is_file():
@@ -286,6 +291,10 @@ def build(args):
         layout(reference, area, bundle / "tile-layout.png")
         Image.fromarray(count.astype("uint8")).save(bundle / "date-count.png")
         dem_metadata = source_metadata(args.dem)
+        dem_tags = {key.upper(): value for key, value in dem_metadata.items()}
+        metadata = {str(day): tags for day, path in sorted(files.items()) if (tags := source_metadata(path))}
+        imagery_credits = [value for tags in metadata.values() for key, value in tags.items()
+                           if "attrib" in key.lower()]
         manifest = {
             "printer": PRINTER,
             "slicer": "Flash Studio Desktop",
@@ -300,10 +309,12 @@ def build(args):
             "imagery_provider": provider,
             "model": model,
             "constellations": constellations,
-            "imagery_attribution": attribution,
+            "imagery_attribution": combine_credits(*imagery_credits, attribution),
             "imagery_files": {str(day): path.name for day, path in sorted(files.items())},
             "dem": args.dem.name,
-            "dem_attribution": args.dem_attribution or dem_metadata.get("ATTRIBUTION"),
+            "dem_attribution": combine_credits(dem_tags.get("ATTRIBUTION"), args.dem_attribution),
+            "dem_distribution_notice": dem_tags.get("DISTRIBUTION_NOTICE"),
+            "dem_license_url": dem_tags.get("LICENSE_URL"),
             "composite": args.composite,
             "minimum_dates": args.min_dates,
             "composite_coverage": float(np.isfinite(reference[0]).mean()),
@@ -311,7 +322,6 @@ def build(args):
             "toposaic_base_revision": "fb365e0d12cfd99483d0d0cfe37077295d555b68",
             "tiles": {},
         }
-        metadata = {str(day): tags for day, path in files.items() if (tags := source_metadata(path))}
         if metadata:
             manifest["imagery_source_metadata"] = metadata
         if dem_metadata:
@@ -375,8 +385,8 @@ def write_print_guide(bundle, manifest):
         lines.extend(["Filament set " + ", ".join(palette), *plates, ""])
     lines += ["", "Terrain meshing, puzzle seams and 3MF export by TopoSaic (Yann Ramin and contributors).",
               "https://github.com/theatrus/toposaic"]
-    for key in ("imagery_attribution", "dem_attribution"):
-        if manifest[key]:
+    for key in ("imagery_attribution", "dem_attribution", "dem_distribution_notice", "dem_license_url"):
+        if manifest.get(key):
             lines.append(manifest[key])
     lines.append("See print-manifest.json for raster details.")
     (bundle / "PRINT.txt").write_text("\n".join(lines) + "\n", encoding="utf-8")
