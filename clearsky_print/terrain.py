@@ -1,6 +1,7 @@
 """Prepare ClearSKY imagery and terrain for a Flashforge Creator 5 Pro."""
 
 import argparse
+from collections import Counter
 from dataclasses import asdict
 from datetime import date
 import json
@@ -26,6 +27,10 @@ ENGINE = Path(__file__).resolve().parents[1] / "target" / "release" / "examples"
 )
 PRINTER = "Flashforge Creator 5 Pro"
 MAX_DATES = 32
+
+
+class MeshCheckError(ValueError):
+    """A generated mesh failed a closed-edge check."""
 
 
 def write_json(path, data):
@@ -195,6 +200,13 @@ def tile_job(args, area, elevations, reference, images, column, row, colors, pro
 def model_properties(path):
     with ZipFile(path) as archive, archive.open("3D/3dmodel.model") as model_file:
         root = ElementTree.parse(model_file).getroot()
+    for mesh in root.findall(".//{*}mesh"):
+        edges = Counter()
+        for face in mesh.findall("./{*}triangles/{*}triangle"):
+            a, b, c = (int(face.attrib[key]) for key in ("v1", "v2", "v3"))
+            edges.update(tuple(sorted(pair)) for pair in ((a, b), (b, c), (c, a)))
+        if not edges or set(edges.values()) != {2}:
+            raise MeshCheckError(f"{path.parent.parent.name}/{path.parent.name} failed the closed-mesh check.")
     colors = [entry.attrib["color"][:7].upper() for entry in root.findall(".//{*}colorgroup/{*}color")]
     vertices = root.findall(".//{*}vertex")
     xs = [float(v.attrib["x"]) for v in vertices]
@@ -280,6 +292,11 @@ def build(args):
             "area": asdict(area),
             "utm_epsg": area.epsg,
             "tile_edges": args.edge,
+            "samples_per_tile_side": args.samples,
+            "nominal_joint_clearance_mm": args.clearance_mm if args.edge == "puzzle" else None,
+            "nominal_tile_width_mm": args.width_mm,
+            "base_height_mm": args.base_mm,
+            "relief_height_mm": args.relief_mm,
             "imagery_provider": provider,
             "model": model,
             "constellations": constellations,
@@ -322,6 +339,22 @@ def build(args):
         write_print_guide(bundle, manifest)
         bundle.rename(args.out)
     print(f"Print files are in {args.out}")
+
+
+def build_with_mesh_check(args):
+    if args.samples is not None:
+        build(args)
+        return
+    candidates = (65, 81, 49) if args.width_mm < 120 else (129, 97, 65)
+    for samples in candidates:
+        args.samples = samples
+        try:
+            build(args)
+        except MeshCheckError as error:
+            print(f"{error} Tried {samples} samples per side.", flush=True)
+        else:
+            return
+    raise MeshCheckError("Could not export closed meshes. Try a different joint clearance or smaller area.")
 
 
 def write_print_guide(bundle, manifest):
@@ -400,12 +433,12 @@ def cli():
     print_cmd.add_argument("--width-mm", type=float, default=160)
     print_cmd.add_argument("--base-mm", type=float, default=3.2)
     print_cmd.add_argument("--relief-mm", type=float, default=22)
-    print_cmd.add_argument("--samples", type=int, default=129, help="Aligned samples per tile side.")
+    print_cmd.add_argument("--samples", type=int, help="Aligned samples per tile side. Default retries alternate sizes if needed.")
     print_cmd.add_argument("--engine", type=Path, default=ENGINE)
     args = parser.parse_args()
     try:
         if args.command == "build":
-            build(args)
+            build_with_mesh_check(args)
         else:
             run_api(args)
     except (ValueError, OSError, KeyError, RasterioError, subprocess.CalledProcessError) as error:

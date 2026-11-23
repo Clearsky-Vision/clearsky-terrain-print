@@ -1,0 +1,38 @@
+CLEARSKY TERRAIN PRINT | WINDOWS STARTER
+
+To print Fuji today
+Use the separate Mount Fuji print kit. Extract it and open each 3MF in
+Flash Studio Desktop with the Creator 5 Pro profile. The kit includes an
+assembly layout, filament guide and the recommended print order.
+
+To build new print files
+1. Extract this entire ZIP to a writable folder.
+2. Double-click Start Terrain Print.cmd. The first launch installs the
+   Python imagery libraries into .venv inside this folder. It needs internet.
+   If Python is missing, install 64-bit Python 3.13 with Tcl/Tk and the
+   Windows py launcher. https://www.python.org/downloads/windows/
+3. Click Load Fuji example to try it without a ClearSKY account. Choose a
+   new print folder and click Build models.
+4. Click Open print folder. Use PRINT.txt, tile-layout.png and the previews
+   to select and slice each 3MF in Flash Studio Desktop.
+
+Use your ClearSKY data
+Open the ClearSKY order tab. Paste your API key and an existing order UUID.
+Use Draw area to export a WGS84 GeoJSON polygon, then choose its file and
+set the tile grid. Find the available dates, select the ones you want, and
+review the processing-unit estimate before downloading. Back on Build
+print files, choose an elevation GeoTIFF with elevations in metres.
+The key remains in the app session and clears when you close the window.
+
+If you already downloaded RGB GeoTIFFs, choose Import TIFFs instead.
+Use files with an IMAGE_DATE tag or a date in the filename and choose an
+area GeoJSON. To override colors for individual tiles, edit the
+tile-palettes.json from your first run and select it when rebuilding.
+
+Credits
+Terrain meshing, puzzle interlocks and STL/3MF export are based on TopoSaic
+by Yann Ramin and contributors. https://github.com/theatrus/toposaic
+See LICENSE, NOTICE, THIRD_PARTY_NOTICES.md and dependency licenses.
+The Fuji example uses modified Copernicus Sentinel-2 data and the
+Copernicus GLO-30 elevation model. Its input and print manifests carry
+the data-source notices.

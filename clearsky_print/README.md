@@ -7,6 +7,11 @@ Each puzzle tile is a separate printable model with its own four-color palette.
 
 ## Setup
 
+The Windows starter ZIP includes the built engine and an offline Fuji
+example. Extract the ZIP and double-click **Start Terrain Print.cmd**.
+The first run uses 64-bit Python and downloads Python dependencies into the
+starter folder. For development or other platforms, build from source below.
+
 Install Python 3.11 or newer and [Rust](https://rust-lang.org/install/). On
 Windows, use the Rust MSVC toolchain with the C++ build tools. Open a terminal
 at the root of this repository and run:
@@ -19,6 +24,8 @@ cargo build --locked --release -p toposaic-core --example clearsky_terrain
 The command looks for the engine under `target/release/examples`. Use
 `--engine` to point to a separate binary. The workflow uses the TopoSaic
 Rust core directly and runs without the map server or desktop app.
+On Windows, run `python clearsky_print/desktop.py` to open the same controls
+from a source checkout after setup.
 
 ### Try it without an account
 
@@ -90,7 +97,9 @@ with `--dn-offset` (for example, `--dn-offset -1000`).
 - `PRINT.txt` groups plates by their filament set. Print one group, change
   spools, and print the next group. Rebuild
   an individual piece with `--only-tile`, keeping the original data, layout,
-  width, and clearance. Use a new output folder each time.
+  width, and clearance. Copy the original `samples_per_tile_side` from
+  `print-manifest.json` into `--samples` to keep the assembly's raster grid.
+  Use a new output folder each time.
 - Import `terrain-solid.3mf` as a model into
   [Flash Studio Desktop](https://www.flashforge.com/pages/flash-studio-desktop).
   Select **Flashforge Creator 5 Pro** and your actual nozzle and filaments.
@@ -113,6 +122,9 @@ Multiple dates improve the stability of the surface colors. The tool keeps
 the spatial detail available in the input rasters. Evaluating multi-image
 super-resolution would need an independent higher-resolution reference and
 a test that the added features survive the print scale.
+
+The exporter checks for closed meshes before saving the print bundle. With
+automatic sampling it tries another mesh density if a tile fails that check.
 
 ## Try the Lofoten example
 

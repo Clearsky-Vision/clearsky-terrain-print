@@ -8,6 +8,8 @@ import subprocess
 import sys
 from tempfile import TemporaryDirectory
 import unittest
+from types import SimpleNamespace
+from unittest.mock import patch
 from xml.etree import ElementTree
 from zipfile import ZipFile
 
@@ -16,10 +18,26 @@ import numpy as np
 from clearsky_api import PROCESS, prepare_downloads
 from demo import generate
 from rasters import Area, composite
-from terrain import ENGINE
+from terrain import ENGINE, MeshCheckError, build_with_mesh_check
 
 
 class TemporalTests(unittest.TestCase):
+    def test_mesh_retry_preserves_an_explicit_grid_size(self):
+        tries = []
+
+        def generate(args):
+            tries.append(args.samples)
+            if len(tries) == 1:
+                raise MeshCheckError("fixture mesh check")
+
+        with patch("terrain.build", side_effect=generate), patch("builtins.print"):
+            build_with_mesh_check(SimpleNamespace(samples=None, width_mm=90))
+        self.assertEqual(tries, [65, 81])
+        with patch("terrain.build", side_effect=MeshCheckError("fixture mesh check")) as call:
+            with self.assertRaises(MeshCheckError):
+                build_with_mesh_check(SimpleNamespace(samples=65, width_mm=90))
+        self.assertEqual(call.call_count, 1)
+
     def test_median_and_mean_ignore_missing_dates(self):
         images = [np.full((3, 1, 2), value) for value in (.1, .2, .9)]
         images[0][:, 0, 1] = np.nan
