@@ -1337,8 +1337,9 @@ pub(crate) fn solid_outline(spec: &GenerationSpec, edge_samples: usize) -> Resul
         let mut tile = spec.clone();
         tile.rows = 1;
         tile.columns = 1;
-        tile.clearance_mm = 0.0;
-        return piece_outline(&tile, 0, 0, true);
+        // ClearSKY terrain extension: allow separately printed tiles a small fit gap.
+        tile.clearance_mm = spec.solid_interlock_clearance_mm.unwrap_or(0.0);
+        return piece_outline(&tile, 0, 0, spec.solid_interlock_clearance_mm.is_none());
     }
     let corners = [
         [0.0, 0.0],

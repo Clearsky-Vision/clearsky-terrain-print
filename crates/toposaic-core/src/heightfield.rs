@@ -38,6 +38,7 @@ pub struct HeightField {
     /// What the values are heights above. `Unknown` until the fetcher that
     /// knows its provider tags it.
     pub vertical_reference: VerticalReference,
+    sample_window: Option<[usize; 4]>,
 }
 
 impl HeightField {
@@ -62,7 +63,19 @@ impl HeightField {
             values_m,
             source: source.into(),
             vertical_reference: VerticalReference::default(),
+            sample_window: None,
         })
+    }
+
+    /// ClearSKY terrain extension: map a tile's nominal corners to a window
+    /// in a larger raster so an interlocking tab can sample across the seam.
+    pub fn with_sample_window(mut self, window: [usize; 4]) -> Result<Self> {
+        let [left, bottom, right, top] = window;
+        if left >= right || bottom >= top || right >= self.width || top >= self.height {
+            bail!("invalid height field sample window");
+        }
+        self.sample_window = Some(window);
+        Ok(self)
     }
 
     fn normalized_at(&self, u: f32, v: f32, minimum: f32, range: f32) -> f32 {
@@ -70,8 +83,11 @@ impl HeightField {
     }
 
     pub fn elevation_m_at(&self, u: f32, v: f32) -> f32 {
-        let x = u.clamp(0.0, 1.0) * (self.width - 1) as f32;
-        let y = v.clamp(0.0, 1.0) * (self.height - 1) as f32;
+        let [left, bottom, right, top] =
+            self.sample_window
+                .unwrap_or([0, 0, self.width - 1, self.height - 1]);
+        let x = (left as f32 + u * (right - left) as f32).clamp(0.0, (self.width - 1) as f32);
+        let y = (bottom as f32 + v * (top - bottom) as f32).clamp(0.0, (self.height - 1) as f32);
         let x0 = x.floor() as usize;
         let y0 = y.floor() as usize;
         let x1 = (x0 + 1).min(self.width - 1);
@@ -211,6 +227,9 @@ impl HeightField {
 
     pub fn samples_per_piece(&self, spec: &GenerationSpec) -> usize {
         if spec.solid_model {
+            if let Some([left, bottom, right, top]) = self.sample_window {
+                return (right - left).min(top - bottom);
+            }
             return (self.width - 1).min(self.height - 1);
         }
         ((self.width - 1) / spec.columns.max(1) as usize)

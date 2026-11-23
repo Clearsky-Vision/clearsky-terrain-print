@@ -114,6 +114,9 @@ pub struct GenerationSpec {
     pub adjacent_rows: u32,
     pub super_tile_anchor: SuperTileAnchor,
     pub adjacent_interlocks: bool,
+    /// ClearSKY terrain extension: optional fitted clearance for solid tiles.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub solid_interlock_clearance_mm: Option<f32>,
     pub outer_edge_interlocks: bool,
     pub adjacent_tile_column: u32,
     pub adjacent_tile_row: u32,
@@ -189,6 +192,7 @@ impl Default for GenerationSpec {
             adjacent_rows: 1,
             super_tile_anchor: SuperTileAnchor::TopLeft,
             adjacent_interlocks: false,
+            solid_interlock_clearance_mm: None,
             outer_edge_interlocks: false,
             adjacent_tile_column: 0,
             adjacent_tile_row: 0,
@@ -296,6 +300,12 @@ impl GenerationSpec {
             || self.adjacent_tile_row >= self.adjacent_rows
         {
             bail!("super-tile position must be inside its grid");
+        }
+        if self
+            .solid_interlock_clearance_mm
+            .is_some_and(|mm| !(0.0..=1.0).contains(&mm))
+        {
+            bail!("solid interlock clearance must be between 0 and 1 mm");
         }
         if self.puzzle_tile_column.unsigned_abs() > MAX_PUZZLE_TILE_COORDINATE as u32
             || self.puzzle_tile_row.unsigned_abs() > MAX_PUZZLE_TILE_COORDINATE as u32
@@ -2453,13 +2463,15 @@ pub enum SteepForestTarget {
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum ThreeMfStyle {
-    /// Color group plus slicer face-paint codes; no embedded settings.
+    /// Slicer face-paint codes only; no embedded settings.
     Painted,
     /// Today's full output: paint codes plus embedded project settings.
     #[default]
     Project,
     /// Core-spec color group only; cleanest for interchange.
     Geometry,
+    /// ClearSKY terrain extension: color group and face-paint codes with no presets.
+    ColorModel,
 }
 
 /// Which filament preset the embedded project settings name for every slot.

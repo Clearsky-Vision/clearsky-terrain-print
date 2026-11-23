@@ -1,4 +1,16 @@
-# TopoSaic
+# ClearSKY Terrain Print
+
+Turn a ClearSKY time series and an elevation GeoTIFF into a printable relief
+map for the Flashforge Creator 5 Pro. Build one solid model or interlocking
+puzzle tiles. Each tile can use its own four-filament palette.
+
+[Start here](clearsky_print/README.md) for setup, the ClearSKY order workflow,
+an offline demo, and Flash Studio instructions.
+
+This is a downstream extension of [TopoSaic](https://github.com/theatrus/toposaic)
+by Yann Ramin and contributors.
+
+## TopoSaic upstream
 
 *Terrain Puzzle*
 
