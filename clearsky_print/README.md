@@ -7,6 +7,13 @@ Each puzzle tile is a separate printable model with its own four-color palette.
 
 ## Setup
 
+The integrated Windows starter opens the original TopoSaic studio in your
+browser. Extract the archive, double-click **Start TopoSaic Studio.cmd**, and
+choose **ClearSKY studio** in the top bar. Use the map to select the area,
+then load a local series or select dates from an existing ClearSKY order.
+The print kit includes the existing Creator 5 Pro exports, and the studio
+previews the geometry and filament assignments from the exported files.
+
 The Windows starter ZIP includes the built engine and an offline Fuji
 example. Extract the ZIP and double-click **Start Terrain Print.cmd**.
 The first run uses 64-bit Python and downloads Python dependencies into the
@@ -26,6 +33,17 @@ The command looks for the engine under `target/release/examples`. Use
 Rust core directly and runs without the map server or desktop app.
 On Windows, run `python clearsky_print/desktop.py` to open the same controls
 from a source checkout after setup.
+
+To run the integrated studio from source, build the terrain example and
+`toposaic-api`, install the Python requirements, then build the frontend
+with `npm ci` followed by `npm run desktop:build`. Before starting the API,
+set `TOPOSAIC_STUDIO_DIR` to the absolute path for `dist-desktop` and set
+`TOPOSAIC_CLEARSKY_PYTHON`, `TOPOSAIC_CLEARSKY_BRIDGE` and
+`TOPOSAIC_CLEARSKY_ENGINE` to the Python executable, `clearsky_print/studio_bridge.py`,
+and the built terrain example. Optionally point `TOPOSAIC_CLEARSKY_EXAMPLE`
+to a folder containing the Fuji `series.json` and `dem.tif`.
+Open the local API address in a browser. The ClearSKY bridge accepts local
+studio requests and keeps the API key in memory during an order operation.
 
 ### Try it without an account
 

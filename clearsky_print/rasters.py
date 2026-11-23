@@ -1,6 +1,7 @@
 """Area selection, GeoTIFF alignment and temporal compositing."""
 
 from dataclasses import dataclass
+from datetime import date
 import json
 from pathlib import Path
 import re
@@ -171,6 +172,21 @@ def source_metadata(path):
         return {key: value for key, value in source.tags().items()
                 if key.upper() in {"IMAGE_DATE", "MODEL_VERSION", "IMAGE_VERSION", "CONSTELLATIONS", "SOURCE"}
                 or any(term in key.lower() for term in ("attrib", "license", "provenance"))}
+
+
+def dated_images(paths):
+    images = {}
+    for path in map(Path, paths):
+        tags = {key.upper(): value for key, value in source_metadata(path).items()}
+        guess = re.search(r"(?:19|20)\d{2}-?\d{2}-?\d{2}", path.stem)
+        value = tags.get("IMAGE_DATE") or (guess.group(0) if guess else None)
+        if not value:
+            raise ValueError(f"{path.name} needs an image date in its metadata or a YYYY-MM-DD filename.")
+        day = date.fromisoformat(value).isoformat()
+        if day in images:
+            raise ValueError(f"Choose only one image for {day}.")
+        images[day] = str(path.resolve())
+    return images
 
 
 def composite(images, method, min_dates):

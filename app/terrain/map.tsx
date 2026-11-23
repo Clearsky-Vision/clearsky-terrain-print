@@ -109,6 +109,7 @@ export function TerrainMap({
   onPlaceMarker,
   onCenterChange,
   onGroundSpanChange,
+  onSelectionChange,
   onOutlineChange,
   recallCount,
   selectionHeightFraction = 1,
@@ -118,6 +119,7 @@ export function TerrainMap({
   onPlaceMarker: (longitude: number, latitude: number) => void;
   onCenterChange: (longitude: number, latitude: number) => void;
   onGroundSpanChange: (groundSpanKm: number) => void;
+  onSelectionChange?: (longitude: number, latitude: number, groundSpanKm: number) => void;
   onOutlineChange: (points: [number, number][]) => void;
   // Bumped each time a saved setup is recalled.
   recallCount: number;
@@ -613,8 +615,12 @@ export function TerrainMap({
         viewWorldCenter.y + anchorY - size.height * 0.5,
       );
       setViewCenter(moveToWorld(viewWorldCenter.x, viewWorldCenter.y));
-      onGroundSpanChange(nextGroundSpan);
-      onCenterChange(nextAnchor.longitude, nextAnchor.latitude);
+      if (onSelectionChange) {
+        onSelectionChange(nextAnchor.longitude, nextAnchor.latitude, nextGroundSpan);
+      } else {
+        onGroundSpanChange(nextGroundSpan);
+        onCenterChange(nextAnchor.longitude, nextAnchor.latitude);
+      }
       return;
     }
     const next = moveToWorld(

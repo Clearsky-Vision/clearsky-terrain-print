@@ -2,7 +2,6 @@
 
 import json
 from dataclasses import asdict
-from datetime import date
 import os
 from pathlib import Path
 from queue import Empty, Queue
@@ -14,7 +13,7 @@ import tkinter as tk
 from tkinter import colorchooser, filedialog, messagebox, simpledialog, ttk
 import webbrowser
 
-from rasters import Area, source_metadata
+from rasters import Area, dated_images
 from terrain import ENGINE, write_json
 
 
@@ -190,17 +189,7 @@ class TerrainPrint:
             if not match:
                 raise ValueError("Enter the grid as 2 x 2 or 1 x 1.")
             area = Area.from_geojson(Path(outline), *map(int, match.groups()))
-            images = {}
-            for path in map(Path, paths):
-                tags = {key.upper(): value for key, value in source_metadata(path).items()}
-                guess = re.search(r"(?:19|20)\d{2}-?\d{2}-?\d{2}", path.stem)
-                value = tags.get("IMAGE_DATE") or (guess.group(0) if guess else None)
-                if not value:
-                    raise ValueError(f"{path.name} needs an image date in its metadata or a YYYY-MM-DD filename.")
-                day = date.fromisoformat(value).isoformat()
-                if day in images:
-                    raise ValueError(f"Choose only one image for {day}.")
-                images[day] = str(path)
+            images = dated_images(paths)
         except (ValueError, OSError, TypeError, KeyError) as error:
             messagebox.showerror("Check the GeoTIFFs", str(error))
             return

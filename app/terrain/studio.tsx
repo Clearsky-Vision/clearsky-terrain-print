@@ -93,6 +93,7 @@ import { OutputPanel } from "./panels/output-panel";
 import { SurfacePanel } from "./panels/surface-panel";
 import { displayVersion, isVersionNewer } from "../updates/version";
 
+const ClearSkyStudio = lazy(() => import("./clearsky-studio").then(({ ClearSkyStudio }) => ({ default: ClearSkyStudio })));
 const GlobePreview = lazy(() =>
   import("./globe-preview").then(({ GlobePreview: component }) => ({ default: component })),
 );
@@ -206,6 +207,7 @@ function oddSuperTileSize(value: number) {
 
 export function TerrainStudio() {
   const [spec, setSpec] = useState(initialSpec);
+  const [clearSkyOpen, setClearSkyOpen] = useState(false);
   const seededInitialSetup = useRef(false);
   const [appVersion, setAppVersion] = useState(APP_VERSION);
   const [availableUpdate, setAvailableUpdate] =
@@ -2194,6 +2196,14 @@ export function TerrainStudio() {
         : globePreview?.globe_meshes ? "Drag to rotate" : "Preparing globe preview…"
   );
 
+  if (clearSkyOpen) {
+    return (
+      <Suspense fallback={<main className="studio"><p>Loading ClearSKY studio…</p></main>}>
+        <ClearSkyStudio spec={spec} onBack={() => setClearSkyOpen(false)} />
+      </Suspense>
+    );
+  }
+
   return (
     <main className="studio">
       <header className="topbar">
@@ -2207,6 +2217,7 @@ export function TerrainStudio() {
           </span>
         </a>
         <div className="topbar-actions">
+          <button type="button" className="setup-menu-button" onClick={() => setClearSkyOpen(true)}>ClearSKY studio</button>
           <div className="setup-manager">
             <div
               className="setup-menu"

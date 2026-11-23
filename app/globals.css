@@ -182,6 +182,150 @@ a {
   padding: 0 24px 18px;
 }
 
+.clearsky-workspace {
+  display: grid;
+  grid-template-columns: minmax(0, 1.45fr) minmax(350px, 1fr);
+  gap: 14px;
+  min-height: 0;
+}
+
+.clearsky-visuals {
+  display: grid;
+  grid-template-rows: minmax(220px, 1.1fr) minmax(200px, 1fr);
+  gap: 14px;
+  min-height: 0;
+}
+
+.controls.clearsky-controls {
+  display: block;
+  padding: 12px 16px;
+  overflow-y: auto;
+  min-height: 0;
+}
+
+.clearsky-controls fieldset {
+  display: grid;
+  gap: 10px;
+  margin: 0 0 14px;
+  min-width: 0;
+  border: 1px solid var(--line);
+  background: var(--panel);
+  padding: 10px 12px 12px;
+}
+
+.clearsky-controls legend {
+  color: var(--moss);
+  font-weight: 750;
+  padding: 0 5px;
+}
+
+.clearsky-controls label {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.clearsky-controls small {
+  color: var(--muted);
+  line-height: 1.45;
+}
+
+.clearsky-row,
+.clearsky-swatches {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 7px;
+}
+
+.clearsky-row label {
+  flex: 1 1 160px;
+}
+
+.clearsky-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 7px 10px;
+}
+
+.clearsky-controls button,
+.clearsky-download {
+  border: 1px solid var(--line-strong);
+  padding: 6px 10px;
+  min-height: var(--control-height);
+  font-size: 0.8rem;
+  font-weight: 650;
+}
+
+.clearsky-controls button:disabled {
+  opacity: 0.55;
+}
+
+.clearsky-controls input[type="date"] {
+  border: 1px solid var(--line-strong);
+  min-width: 0;
+  min-height: var(--control-height);
+  padding: 0 7px;
+  background: var(--field);
+}
+
+.clearsky-controls label.clearsky-checkbox,
+.clearsky-dates label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.clearsky-dates {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+  gap: 6px;
+  max-height: 140px;
+  overflow: auto;
+}
+
+.clearsky-swatches input {
+  width: 42px;
+  height: 35px;
+  cursor: pointer;
+}
+
+.clearsky-preview-note,
+.clearsky-estimate {
+  background: var(--paper-deep);
+  padding: 12px;
+}
+
+.clearsky-preview-note {
+  display: grid;
+  place-items: center;
+  text-align: center;
+  color: var(--muted);
+}
+
+.clearsky-error {
+  color: #913a2a;
+  padding: 7px 0;
+}
+
+.clearsky-download {
+  width: fit-content;
+  background: var(--moss);
+  color: white;
+}
+
+@media (max-width: 820px) {
+  .clearsky-workspace {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: minmax(155px, 1fr) minmax(0, 1fr);
+  }
+  .clearsky-visuals {
+    grid-template: minmax(0, 1fr) / repeat(2, minmax(0, 1fr));
+  }
+}
+
 .topbar {
   align-items: center;
   border-bottom: 1px solid var(--line);

@@ -15,6 +15,7 @@ use tower_http::trace::TraceLayer;
 use tracing::info;
 
 mod cache;
+mod clearsky;
 mod database;
 mod datum;
 mod elevation;
@@ -57,6 +58,8 @@ struct AppState {
     /// The live preview is replaceable work: a newer request cancels the
     /// older one instead of leaving a queue of OSM fetches behind it.
     active_preview: Arc<StdMutex<Option<ActivePreview>>>,
+    clearsky: Option<clearsky::Bridge>,
+    studio_dir: Option<PathBuf>,
 }
 
 #[derive(Clone)]
@@ -109,10 +112,26 @@ pub async fn run_with(data_dir: PathBuf, address: String) -> Result<()> {
         last_geocode_request: Arc::new(AsyncMutex::new(Instant::now() - Duration::from_secs(1))),
         active_jobs: Arc::new(StdMutex::new(HashMap::new())),
         active_preview: Arc::new(StdMutex::new(None)),
+        clearsky: clearsky::Bridge::from_env(&data_dir),
+        studio_dir: std::env::var_os("TOPOSAIC_STUDIO_DIR").map(PathBuf::from),
     };
 
     let app = Router::new()
+        .route("/", get(studio_page))
+        .route("/assets/{file}", get(studio_asset))
         .route("/api/health", get(health))
+        .route("/api/clearsky/status", get(clearsky::status))
+        .route(
+            "/api/clearsky/bridge/{action}",
+            axum::routing::post(clearsky::run),
+        )
+        .route("/api/clearsky/jobs", axum::routing::post(clearsky::new_job))
+        .route("/api/clearsky/jobs/{id}", get(clearsky::job))
+        .route(
+            "/api/clearsky/jobs/{id}/preview/{tile}/{date}",
+            get(clearsky::preview),
+        )
+        .route("/api/clearsky/jobs/{id}/download", get(clearsky::download))
         .route("/api/cache", get(cache::cache_summary))
         .route("/api/cache/clear", axum::routing::post(cache::clear_cache))
         .route("/api/places", get(search_places))
@@ -168,6 +187,44 @@ pub async fn run_with(data_dir: PathBuf, address: String) -> Result<()> {
     Ok(())
 }
 
+async fn studio_page(
+    axum::extract::State(state): axum::extract::State<AppState>,
+) -> Result<axum::response::Response, (StatusCode, Json<ApiError>)> {
+    let directory = state
+        .studio_dir
+        .ok_or_else(|| api_error(StatusCode::NOT_FOUND, "Studio not bundled."))?;
+    clearsky::send_file(
+        directory.join("index.html"),
+        "text/html; charset=utf-8",
+        None,
+    )
+    .await
+}
+
+async fn studio_asset(
+    axum::extract::State(state): axum::extract::State<AppState>,
+    axum::extract::Path(file): axum::extract::Path<String>,
+) -> Result<axum::response::Response, (StatusCode, Json<ApiError>)> {
+    if !file
+        .bytes()
+        .all(|byte| byte.is_ascii_alphanumeric() || matches!(byte, b'.' | b'_' | b'-'))
+    {
+        return Err(api_error(StatusCode::NOT_FOUND, "Asset not found."));
+    }
+    let directory = state
+        .studio_dir
+        .ok_or_else(|| api_error(StatusCode::NOT_FOUND, "Studio not bundled."))?;
+    let media_type = match file.rsplit_once('.').map(|(_, extension)| extension) {
+        Some("js") => "text/javascript; charset=utf-8",
+        Some("css") => "text/css; charset=utf-8",
+        Some("png") => "image/png",
+        Some("svg") => "image/svg+xml",
+        Some("woff2") => "font/woff2",
+        _ => return Err(api_error(StatusCode::NOT_FOUND, "Asset not found.")),
+    };
+    clearsky::send_file(directory.join("assets").join(file), media_type, None).await
+}
+
 async fn health() -> Json<Health> {
     Json(Health {
         status: "ok",
@@ -189,6 +246,8 @@ pub(crate) fn test_state() -> AppState {
         last_geocode_request: Arc::new(AsyncMutex::new(Instant::now())),
         active_jobs: Arc::new(StdMutex::new(HashMap::new())),
         active_preview: Arc::new(StdMutex::new(None)),
+        clearsky: None,
+        studio_dir: None,
     }
 }
 

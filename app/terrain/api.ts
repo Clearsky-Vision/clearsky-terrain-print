@@ -78,14 +78,14 @@ async function requestJsonWithStatus<T>(
   }
 }
 
-async function requestJson<T>(
+export async function requestJson<T>(
   path: string,
   init?: RequestInit,
 ): Promise<T> {
   return (await requestJsonWithStatus<T>(path, init)).body;
 }
 
-function jsonBody(value: unknown, signal?: AbortSignal): RequestInit {
+export function jsonBody(value: unknown, signal?: AbortSignal): RequestInit {
   return {
     method: "POST",
     headers: { "content-type": "application/json" },

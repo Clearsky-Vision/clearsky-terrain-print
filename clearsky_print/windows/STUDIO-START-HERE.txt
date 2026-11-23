@@ -1,0 +1,29 @@
+TOPOSAIC | CLEARSKY STUDIO
+
+1. Extract this entire ZIP to a writable folder.
+2. Install 64-bit Python 3.13 with the py launcher and Tcl/Tk if needed.
+   Double-click Start TopoSaic Studio.cmd. The first run installs the imagery
+   libraries in this folder and requires internet access.
+3. In the browser, click ClearSKY studio in the top bar.
+4. Click Load Fuji example, then Build print files. Select any tile to
+   inspect its 3D model and download the print kit when it is ready.
+
+For your own prints, use the map's Draw area and Move area tools, place search, and
+the rows, columns and ground width controls. Import your dated GeoTIFFs or
+open an existing series. For an existing ClearSKY order, enter the order
+UUID and API key, find dates for the area, select dates, and review the
+processing-unit estimate before downloading. Choose an elevation GeoTIFF
+with heights in metres. Pick a shared filament palette or colors per tile.
+
+Keep the launcher window open while working. The studio runs on this
+computer. The standard TopoSaic studio remains available from the top bar.
+
+Open the downloaded 3MF files in Flash Studio Desktop with the correct
+Creator 5 Pro profile and map the colors to your loaded filaments. The ZIP
+includes the layout, metric 3MF and STL files, and the PRINT.txt guide.
+
+Credits
+TopoSaic is by Yann Ramin and contributors. https://github.com/theatrus/toposaic
+See LICENSE, NOTICE, THIRD_PARTY_NOTICES.md and dependency-licenses.
+The Fuji example carries its Copernicus and Earth Search credits in its
+data and print manifests.
