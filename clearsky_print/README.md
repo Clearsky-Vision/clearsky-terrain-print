@@ -131,6 +131,10 @@ The images contain modified Copernicus Sentinel data 2025, distributed by
 The derived elevation source and its required notice are recorded in the
 DEM, print manifest, and print guide.
 
+Both example 3MFs were sliced locally in Flash Studio Desktop 1.7.23 with
+the Creator 5 Pro 0.4 mm nozzle profile. The resulting G-code used all four
+toolheads for each tile. Physical fit still needs a print test.
+
 ## Credits
 
 Terrain geometry, puzzle interlocks, satellite palette quantization, STL
