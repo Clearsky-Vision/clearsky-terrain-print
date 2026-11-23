@@ -4,11 +4,22 @@ Turn a ClearSKY time series and an elevation GeoTIFF into a printable relief
 map for the Flashforge Creator 5 Pro. Build one solid model or interlocking
 puzzle tiles. Each tile can use its own four-filament palette.
 
-[Start here](clearsky_print/README.md) for setup, the ClearSKY order workflow,
-an offline demo, and Flash Studio instructions.
-
 This is a downstream extension of [TopoSaic](https://github.com/theatrus/toposaic)
 by Yann Ramin and contributors.
+
+## Try the Windows preview
+
+1. Extract `toposaic-clearsky-studio-windows.zip` and run **Start TopoSaic Studio.cmd**.
+2. Select **ClearSKY studio**, then **Load Fuji example** and **Build print files**.
+3. Download the print kit and open a tile's 3MF in Flash Studio with the Creator 5 Pro profile.
+
+The Fuji preview uses three bundled Sentinel-2 dates and a Copernicus DEM.
+The studio generates four interlocking models with a separate palette for each
+tile. Generation and slicing have been checked. A physical fit test and a
+live ClearSKY order test are pending.
+
+See the [setup and printing guide](clearsky_print/README.md) for requirements,
+the order workflow, and instructions for building from source.
 
 ## TopoSaic upstream
 
@@ -22,7 +33,7 @@ tabs and sockets, and stores job state in SQLite. The desktop app lets you
 choose a place and tune the printable model beside a live 3D preview: mesh
 detail, surface colors, mapped lines, buildings, trays, and export style.
 
-## Download
+## Upstream TopoSaic downloads
 
 The current desktop release is
 [TopoSaic v0.8.3](https://github.com/theatrus/toposaic/releases/tag/v0.8.3).
